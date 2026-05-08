@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Brasil × África — Comércio Exterior</title>
+
+  <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+  <style>
+    :root {
+      --bg:        #ffffff;
+      --bg-card:   #ffffff;
+      --ink:       #1a1612;
+      --ink-muted: #6b6257;
+      --rule:      #ddd8ce;
+      --green:     #1a6b3c;
+      --green-lt:  #e8f3ed;
+      --red:       #b22222;
+      --red-lt:    #fceaea;
+      --gold:      #b87d2b;
+      --gold-lt:   #fdf3e3;
+      --accent:    #1a4e6b;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+    }
+
+    /* ── MASTHEAD ── */
+    header {
+      border-bottom: 3px solid var(--ink);
+      padding: 28px 48px 24px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .masthead-left { flex: 1; }
+    .masthead-eyebrow {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 8px;
+    }
+    .masthead-title {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: clamp(28px, 4vw, 48px);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.5px;
+    }
+    .masthead-title span { color: var(--green); }
+    .masthead-sub {
+      margin-top: 8px;
+      font-size: 14px;
+      color: var(--ink-muted);
+      max-width: 560px;
+    }
+    .masthead-meta {
+      text-align: right;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10px;
+      color: var(--ink-muted);
+      line-height: 1.8;
+      border-left: 1px solid var(--rule);
+      padding-left: 24px;
+    }
+
+    /* ── KPIs ── */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1px solid var(--rule);
+    }
+    .kpi-cell {
+      padding: 24px 32px;
+      border-right: 1px solid var(--rule);
+    }
+    .kpi-cell:last-child { border-right: none; }
+    .kpi-label {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 9px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 8px;
+    }
+    .kpi-value {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: clamp(22px, 2.8vw, 34px);
+      font-weight: 700;
+      line-height: 1;
+    }
+    .kpi-value.green { color: var(--green); }
+    .kpi-value.red   { color: var(--red); }
+    .kpi-value.gold  { color: var(--gold); }
+    .kpi-change {
+      margin-top: 6px;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11px;
+    }
+    .kpi-change.up   { color: var(--green); }
+    .kpi-change.down { color: var(--red); }
+
+    /* ── LAYOUT PRINCIPAL ── */
+    main { padding: 40px 48px; max-width: 1600px; margin: 0 auto; }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--rule);
+    }
+    .section-title {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .section-note {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10px;
+      color: var(--ink-muted);
+    }
+
+    /* Grid layouts */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 48px; }
+    .grid-1  { margin-bottom: 48px; }
+
+    .chart-card {
+      background: var(--bg-card);
+      border: 1px solid var(--rule);
+      border-radius: 2px;
+      padding: 28px;
+    }
+    .chart-card .card-title {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .chart-card .card-sub {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10px;
+      color: var(--ink-muted);
+      margin-bottom: 20px;
+    }
+
+    .chart-area { width: 100%; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--rule);
+      padding: 20px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10px;
+      color: var(--ink-muted);
+    }
+
+    @media (max-width: 960px) {
+      header { flex-direction: column; padding: 20px 20px 16px; }
+      .masthead-meta { border-left: none; border-top: 1px solid var(--rule); padding: 12px 0 0; text-align: left; }
+      .kpi-strip { grid-template-columns: 1fr 1fr; }
+      .grid-2 { grid-template-columns: 1fr; }
+      main { padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- MASTHEAD -->
+<header>
+  <div class="masthead-left">
+    <div class="masthead-eyebrow">SECEX / MDIC · ComexStat · Análise de Comércio Exterior</div>
+    <h1 class="masthead-title">Brasil <span>×</span> África</h1>
+    <p class="masthead-sub">
+      Evolução histórica do comércio bilateral entre o Brasil e o continente africano —
+      exportações, importações, saldo e principais parceiros.
+    </p>
+  </div>
+  <div class="masthead-meta">
+    Série histórica: 1997 – 2025<br/>
+    Valores em US$ FOB<br/>
+    2026 excluído (ano incompleto)<br/>
+    Fonte: SECEX/MDIC
+  </div>
+</header>
+
+<!-- KPIs 2025 -->
+<div class="kpi-strip">
+  <div class="kpi-cell">
+    <div class="kpi-label">Exportações · 2025</div>
+    <div class="kpi-value green" id="kpi-exp">—</div>
+    <div class="kpi-change" id="kpi-var">—</div>
+  </div>
+  <div class="kpi-cell">
+    <div class="kpi-label">Importações · 2025</div>
+    <div class="kpi-value red" id="kpi-imp">—</div>
+  </div>
+  <div class="kpi-cell">
+    <div class="kpi-label">Saldo · 2025</div>
+    <div class="kpi-value gold" id="kpi-saldo">—</div>
+  </div>
+  <div class="kpi-cell">
+    <div class="kpi-label">Corrente · 2025</div>
+    <div class="kpi-value" id="kpi-corrente">—</div>
+  </div>
+</div>
+
+<main>
+
+  <!-- ROW 1: Fluxo anual + Saldo -->
+  <div class="grid-2">
+    <div class="chart-card">
+      <div class="card-title">Exportações & Importações anuais</div>
+      <div class="card-sub">1997–2025 · US$ FOB · barras empilhadas</div>
+      <div class="chart-area" id="chart-barras" style="height:320px"></div>
+    </div>
+    <div class="chart-card">
+      <div class="card-title">Saldo comercial anual</div>
+      <div class="card-sub">Exportações menos importações · valores em US$ FOB</div>
+      <div class="chart-area" id="chart-saldo" style="height:320px"></div>
+    </div>
+  </div>
+
+  <!-- ROW 2: Corrente total (área) -->
+  <div class="grid-1">
+    <div class="chart-card">
+      <div class="card-title">Corrente de comércio — Brasil × África vs. China e EUA</div>
+      <div class="card-sub">
+        Comparativo de escala: corrente acumulada Brasil×África frente ao total com China e EUA · 1997–2025
+      </div>
+      <div class="chart-area" id="chart-potencias" style="height:340px"></div>
+    </div>
+  </div>
+
+  <!-- ROW 3: Parceiros históricos -->
+  <div class="grid-1">
+    <div class="chart-card">
+      <div class="card-title">Maiores parceiros africanos do Brasil</div>
+      <div class="card-sub">Corrente acumulada 1997–2025 · Top 15 países</div>
+      <div class="chart-area" id="chart-parceiros" style="height:460px"></div>
+    </div>
+  </div>
+
+  <!-- ROW 4: Estados brasileiros -->
+  <div class="grid-1">
+    <div class="chart-card">
+      <div class="card-title">Estados brasileiros com maior relação comercial com a África</div>
+      <div class="card-sub">Exportação vs. importação · corrente acumulada 1997–2025 · Top 15 UFs</div>
+      <div class="chart-area" id="chart-uf" style="height:460px"></div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <span>Fonte: SECEX/MDIC · ComexStat</span>
+  <span>Valores em US$ FOB · 2026 excluído por ser ano incompleto</span>
+</footer>
+
+<script>
+/* ── HELPERS ── */
+function fmtBi(v) {
+  if (Math.abs(v) >= 1e9) return `US$ ${(v/1e9).toFixed(1)}B`;
+  if (Math.abs(v) >= 1e6) return `US$ ${(v/1e6).toFixed(0)}M`;
+  return `US$ ${v.toLocaleString('pt-BR')}`;
+}
+
+const LAYOUT_BASE = {
+  paper_bgcolor: 'rgba(0,0,0,0)',
+  plot_bgcolor:  '#fafaf7',
+  font: { family: "Arial, Helvetica, sans-serif", color: '#1a1612', size: 11 },
+  margin: { t: 12, r: 16, b: 48, l: 72 },
+  xaxis: {
+    showgrid: false, zeroline: false,
+    tickfont: { size: 10 },
+    linecolor: '#ddd8ce', linewidth: 1,
+  },
+  yaxis: {
+    gridcolor: '#ece8e0', gridwidth: 1,
+    zeroline: true, zerolinecolor: '#c8c2b8', zerolinewidth: 1,
+    tickfont: { size: 10 },
+    linecolor: '#ddd8ce',
+  },
+  legend: {
+    orientation: 'h', y: -0.18, x: 0,
+    font: { size: 10 },
+    bgcolor: 'rgba(0,0,0,0)',
+  },
+  hoverlabel: {
+    bgcolor: '#1a1612', bordercolor: '#1a1612',
+    font: { family: "Arial, Helvetica, sans-serif", color: '#f5f2ec', size: 11 },
+  },
+};
+
+const CONFIG = { displayModeBar: false, responsive: true };
+
+/* ── KPIs ── */
+const kpis = {{ kpis | tojson }};
+document.getElementById('kpi-exp').textContent     = fmtBi(kpis.exp_2025);
+document.getElementById('kpi-imp').textContent     = fmtBi(kpis.imp_2025);
+document.getElementById('kpi-saldo').textContent   = fmtBi(kpis.saldo_2025);
+document.getElementById('kpi-corrente').textContent= fmtBi(kpis.corrente_2025);
+
+const varEl = document.getElementById('kpi-var');
+const varSign = kpis.var_exp >= 0 ? '▲' : '▼';
+varEl.textContent = `${varSign} ${Math.abs(kpis.var_exp)}% vs 2024`;
+varEl.className   = 'kpi-change ' + (kpis.var_exp >= 0 ? 'up' : 'down');
+
+/* ── GRÁFICO 1: Barras Exp + Imp ── */
+fetch('/api/fluxo-anual').then(r => r.json()).then(d => {
+  const traces = [
+    {
+      x: d.anos, y: d.exportacoes, name: 'Exportações',
+      type: 'bar', marker: { color: '#1a6b3c', opacity: 0.9 },
+      hovertemplate: '<b>%{x}</b><br>Exportações: %{customdata}<extra></extra>',
+      customdata: d.exportacoes.map(fmtBi),
+    },
+    {
+      x: d.anos, y: d.importacoes, name: 'Importações',
+      type: 'bar', marker: { color: '#b22222', opacity: 0.9 },
+      hovertemplate: '<b>%{x}</b><br>Importações: %{customdata}<extra></extra>',
+      customdata: d.importacoes.map(fmtBi),
+    },
+  ];
+  Plotly.newPlot('chart-barras', traces, {
+    ...LAYOUT_BASE,
+    barmode: 'group',
+    bargap: 0.35,
+    yaxis: { ...LAYOUT_BASE.yaxis, tickformat: '$.2s' },
+  }, CONFIG);
+
+  /* ── GRÁFICO 2: Saldo ── */
+  const cores = d.saldo.map(v => v >= 0 ? '#1a6b3c' : '#b22222');
+  Plotly.newPlot('chart-saldo', [{
+    x: d.anos, y: d.saldo,
+    type: 'bar',
+    marker: { color: cores, opacity: 0.9 },
+    name: 'Saldo',
+    hovertemplate: '<b>%{x}</b><br>Saldo: %{customdata}<extra></extra>',
+    customdata: d.saldo.map(fmtBi),
+  }], {
+    ...LAYOUT_BASE,
+    bargap: 0.35,
+    shapes: [{ type: 'line', x0: d.anos[0]-0.5, x1: d.anos[d.anos.length-1]+0.5, y0: 0, y1: 0,
+      line: { color: '#1a1612', width: 1.5 } }],
+    yaxis: { ...LAYOUT_BASE.yaxis, tickformat: '$.2s' },
+  }, CONFIG);
+});
+
+/* ── GRÁFICO 3: Potências ── */
+fetch('/api/potencias').then(r => r.json()).then(d => {
+  Plotly.newPlot('chart-potencias', [
+    {
+      x: d.anos, y: d.africa, name: 'Brasil × África',
+      type: 'scatter', mode: 'lines+markers',
+      line: { color: '#1a6b3c', width: 2.5 },
+      marker: { size: 5, color: '#1a6b3c' },
+      fill: 'tozeroy', fillcolor: 'rgba(26,107,60,0.08)',
+      hovertemplate: '<b>%{x}</b> · Brasil×África<br>%{customdata}<extra></extra>',
+      customdata: d.africa.map(fmtBi),
+    },
+    {
+      x: d.anos, y: d.china, name: 'China',
+      type: 'scatter', mode: 'lines',
+      line: { color: '#b22222', width: 2, dash: 'dot' },
+      hovertemplate: '<b>%{x}</b> · China<br>%{customdata}<extra></extra>',
+      customdata: d.china.map(fmtBi),
+    },
+    {
+      x: d.anos, y: d.eua, name: 'EUA',
+      type: 'scatter', mode: 'lines',
+      line: { color: '#1a4e6b', width: 2, dash: 'dash' },
+      hovertemplate: '<b>%{x}</b> · EUA<br>%{customdata}<extra></extra>',
+      customdata: d.eua.map(fmtBi),
+    },
+  ], {
+    ...LAYOUT_BASE,
+    yaxis: { ...LAYOUT_BASE.yaxis, tickformat: '$.2s' },
+  }, CONFIG);
+});
+
+/* ── GRÁFICO 4: Parceiros históricos ── */
+fetch('/api/parceiros').then(r => r.json()).then(d => {
+  Plotly.newPlot('chart-parceiros', [
+    {
+      y: d.paises, x: d.exportacao, name: 'Exportação',
+      type: 'bar', orientation: 'h',
+      marker: { color: '#1a6b3c', opacity: 0.85 },
+      hovertemplate: '<b>%{y}</b><br>Exportação: %{customdata}<extra></extra>',
+      customdata: d.exportacao.map(fmtBi),
+    },
+    {
+      y: d.paises, x: d.importacao, name: 'Importação',
+      type: 'bar', orientation: 'h',
+      marker: { color: '#b22222', opacity: 0.85 },
+      hovertemplate: '<b>%{y}</b><br>Importação: %{customdata}<extra></extra>',
+      customdata: d.importacao.map(fmtBi),
+    },
+  ], {
+    ...LAYOUT_BASE,
+    barmode: 'group',
+    bargap: 0.25,
+    margin: { ...LAYOUT_BASE.margin, l: 140 },
+    xaxis: { ...LAYOUT_BASE.xaxis, tickformat: '$.2s' },
+    yaxis: { ...LAYOUT_BASE.yaxis, autorange: 'reversed', showgrid: false, tickfont: { size: 11 } },
+  }, CONFIG);
+});
+
+/* ── GRÁFICO 5: Estados (UF) ── */
+fetch('/api/uf').then(r => r.json()).then(d => {
+  // ordena por corrente crescente para o maior ficar no topo
+  const idx = d.corrente.map((v,i) => i).sort((a,b) => d.corrente[a] - d.corrente[b]);
+  const ufs = idx.map(i => d.ufs[i]);
+  const exp = idx.map(i => d.exportacao[i]);
+  const imp = idx.map(i => d.importacao[i]);
+  const cor = idx.map(i => d.corrente[i]);
+
+  Plotly.newPlot('chart-uf', [
+    {
+      y: ufs, x: exp, name: 'Exportação',
+      type: 'bar', orientation: 'h',
+      marker: { color: '#1a6b3c', opacity: 0.85 },
+      hovertemplate: '<b>%{y}</b><br>Exportação: %{customdata}<extra></extra>',
+      customdata: exp.map(fmtBi),
+    },
+    {
+      y: ufs, x: imp, name: 'Importação',
+      type: 'bar', orientation: 'h',
+      marker: { color: '#b22222', opacity: 0.85 },
+      hovertemplate: '<b>%{y}</b><br>Importação: %{customdata}<extra></extra>',
+      customdata: imp.map(fmtBi),
+    },
+    {
+      y: ufs, x: cor,
+      type: 'scatter', mode: 'markers',
+      marker: { symbol: 'diamond', size: 9, color: '#b87d2b',
+                line: { color: '#fff', width: 1 } },
+      name: 'Corrente total',
+      hovertemplate: '<b>%{y}</b><br>Corrente: %{customdata}<extra></extra>',
+      customdata: cor.map(fmtBi),
+    },
+  ], {
+    ...LAYOUT_BASE,
+    barmode: 'stack',
+    margin: { ...LAYOUT_BASE.margin, l: 150 },
+    xaxis: { ...LAYOUT_BASE.xaxis, tickformat: '$.2s' },
+    yaxis: { ...LAYOUT_BASE.yaxis, showgrid: false, tickfont: { size: 11 } },
+  }, CONFIG);
+});
+</script>
+</body>
+</html>
