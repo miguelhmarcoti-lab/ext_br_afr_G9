@@ -324,40 +324,50 @@ varEl.className   = 'kpi-change ' + (kpis.var_exp >= 0 ? 'up' : 'down');
 fetch('/api/fluxo-anual').then(r => r.json()).then(d => {
   const traces = [
     {
-      x: d.anos, y: d.exportacoes, name: 'Exportações',
+      x: d.anos, y: d.exportacoes_b, name: 'Exportações',
       type: 'bar', marker: { color: '#1a6b3c', opacity: 0.9 },
       hovertemplate: '<b>%{x}</b><br>Exportações: %{customdata}<extra></extra>',
-      customdata: d.exportacoes.map(fmtBi),
+      customdata: d.exportacoes_fmt,
     },
     {
-      x: d.anos, y: d.importacoes, name: 'Importações',
+      x: d.anos, y: d.importacoes_b, name: 'Importações',
       type: 'bar', marker: { color: '#b22222', opacity: 0.9 },
       hovertemplate: '<b>%{x}</b><br>Importações: %{customdata}<extra></extra>',
-      customdata: d.importacoes.map(fmtBi),
+      customdata: d.importacoes_fmt,
     },
   ];
   Plotly.newPlot('chart-barras', traces, {
     ...LAYOUT_BASE,
     barmode: 'group',
     bargap: 0.35,
-    yaxis: { ...LAYOUT_BASE.yaxis, tickformat: '$.2s' },
+    yaxis: {
+      ...LAYOUT_BASE.yaxis,
+      tickformat: ',.1f',
+      tickprefix: '$',
+      ticksuffix: 'B',
+    },
   }, CONFIG);
 
   /* ── GRÁFICO 2: Saldo ── */
   const cores = d.saldo.map(v => v >= 0 ? '#1a6b3c' : '#b22222');
   Plotly.newPlot('chart-saldo', [{
-    x: d.anos, y: d.saldo,
+    x: d.anos, y: d.saldo_b,
     type: 'bar',
     marker: { color: cores, opacity: 0.9 },
     name: 'Saldo',
     hovertemplate: '<b>%{x}</b><br>Saldo: %{customdata}<extra></extra>',
-    customdata: d.saldo.map(fmtBi),
+    customdata: d.saldo_fmt,
   }], {
     ...LAYOUT_BASE,
     bargap: 0.35,
     shapes: [{ type: 'line', x0: d.anos[0]-0.5, x1: d.anos[d.anos.length-1]+0.5, y0: 0, y1: 0,
       line: { color: '#1a1612', width: 1.5 } }],
-    yaxis: { ...LAYOUT_BASE.yaxis, tickformat: '$.2s' },
+    yaxis: {
+      ...LAYOUT_BASE.yaxis,
+      tickformat: ',.1f',
+      tickprefix: '$',
+      ticksuffix: 'B',
+    },
   }, CONFIG);
 });
 
@@ -365,31 +375,36 @@ fetch('/api/fluxo-anual').then(r => r.json()).then(d => {
 fetch('/api/potencias').then(r => r.json()).then(d => {
   Plotly.newPlot('chart-potencias', [
     {
-      x: d.anos, y: d.africa, name: 'Brasil × África',
+      x: d.anos, y: d.africa_b, name: 'Brasil × África',
       type: 'scatter', mode: 'lines+markers',
       line: { color: '#1a6b3c', width: 2.5 },
       marker: { size: 5, color: '#1a6b3c' },
       fill: 'tozeroy', fillcolor: 'rgba(26,107,60,0.08)',
       hovertemplate: '<b>%{x}</b> · Brasil×África<br>%{customdata}<extra></extra>',
-      customdata: d.africa.map(fmtBi),
+      customdata: d.africa_fmt,
     },
     {
-      x: d.anos, y: d.china, name: 'China',
+      x: d.anos, y: d.china_b, name: 'China',
       type: 'scatter', mode: 'lines',
       line: { color: '#b22222', width: 2, dash: 'dot' },
       hovertemplate: '<b>%{x}</b> · China<br>%{customdata}<extra></extra>',
-      customdata: d.china.map(fmtBi),
+      customdata: d.china_fmt,
     },
     {
-      x: d.anos, y: d.eua, name: 'EUA',
+      x: d.anos, y: d.eua_b, name: 'EUA',
       type: 'scatter', mode: 'lines',
       line: { color: '#1a4e6b', width: 2, dash: 'dash' },
       hovertemplate: '<b>%{x}</b> · EUA<br>%{customdata}<extra></extra>',
-      customdata: d.eua.map(fmtBi),
+      customdata: d.eua_fmt,
     },
   ], {
     ...LAYOUT_BASE,
-    yaxis: { ...LAYOUT_BASE.yaxis, tickformat: '$.2s' },
+    yaxis: {
+      ...LAYOUT_BASE.yaxis,
+      tickformat: ',.1f',
+      tickprefix: '$',
+      ticksuffix: 'B',
+    },
   }, CONFIG);
 });
 
@@ -397,25 +412,30 @@ fetch('/api/potencias').then(r => r.json()).then(d => {
 fetch('/api/parceiros').then(r => r.json()).then(d => {
   Plotly.newPlot('chart-parceiros', [
     {
-      y: d.paises, x: d.exportacao, name: 'Exportação',
+      y: d.paises, x: d.exportacao_b, name: 'Exportação',
       type: 'bar', orientation: 'h',
       marker: { color: '#1a6b3c', opacity: 0.85 },
       hovertemplate: '<b>%{y}</b><br>Exportação: %{customdata}<extra></extra>',
-      customdata: d.exportacao.map(fmtBi),
+      customdata: d.exportacao_fmt,
     },
     {
-      y: d.paises, x: d.importacao, name: 'Importação',
+      y: d.paises, x: d.importacao_b, name: 'Importação',
       type: 'bar', orientation: 'h',
       marker: { color: '#b22222', opacity: 0.85 },
       hovertemplate: '<b>%{y}</b><br>Importação: %{customdata}<extra></extra>',
-      customdata: d.importacao.map(fmtBi),
+      customdata: d.importacao_fmt,
     },
   ], {
     ...LAYOUT_BASE,
     barmode: 'group',
     bargap: 0.25,
     margin: { ...LAYOUT_BASE.margin, l: 140 },
-    xaxis: { ...LAYOUT_BASE.xaxis, tickformat: '$.2s' },
+    xaxis: {
+      ...LAYOUT_BASE.xaxis,
+      tickformat: ',.1f',
+      tickprefix: '$',
+      ticksuffix: 'B',
+    },
     yaxis: { ...LAYOUT_BASE.yaxis, autorange: 'reversed', showgrid: false, tickfont: { size: 11 } },
   }, CONFIG);
 });
@@ -425,9 +445,9 @@ fetch('/api/uf').then(r => r.json()).then(d => {
   // ordena por corrente crescente para o maior ficar no topo
   const idx = d.corrente.map((v,i) => i).sort((a,b) => d.corrente[a] - d.corrente[b]);
   const ufs = idx.map(i => d.ufs[i]);
-  const exp = idx.map(i => d.exportacao[i]);
-  const imp = idx.map(i => d.importacao[i]);
-  const cor = idx.map(i => d.corrente[i]);
+  const exp = idx.map(i => d.exportacao_b[i]);
+  const imp = idx.map(i => d.importacao_b[i]);
+  const cor = idx.map(i => d.corrente_b[i]);
 
   Plotly.newPlot('chart-uf', [
     {
@@ -457,7 +477,12 @@ fetch('/api/uf').then(r => r.json()).then(d => {
     ...LAYOUT_BASE,
     barmode: 'stack',
     margin: { ...LAYOUT_BASE.margin, l: 150 },
-    xaxis: { ...LAYOUT_BASE.xaxis, tickformat: '$.2s' },
+    xaxis: {
+      ...LAYOUT_BASE.xaxis,
+      tickformat: ',.1f',
+      tickprefix: '$',
+      ticksuffix: 'B',
+    },
     yaxis: { ...LAYOUT_BASE.yaxis, showgrid: false, tickfont: { size: 11 } },
   }, CONFIG);
 });
